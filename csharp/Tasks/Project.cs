@@ -1,33 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Dynamic;
 
 namespace Tasks
 {
     internal class Project
     {
-        private readonly IList<Task> _tasks = new List<Task>();
+        private Dictionary<long, dynamic> _tasks = new Dictionary<long, dynamic>();
 
-        public void Add(Task task)
+        public void Add(long identifier, string description, bool done)
         {
-            _tasks.Add(task);
+            dynamic task = new ExpandoObject();
+            task.description = description;
+            task.done = done;
+            
+            _tasks.Add(identifier, task);
         }
 
         public void PrintInto(IConsole console)
         {
             foreach (var task in _tasks)
             {
-                console.WriteLine($"    [{(task.Done ? 'x' : ' ')}] {task.Identifier}: {task.Description}");
+                var value = task.Value;
+                var identifier = task.Key;
+                var description = value.description;
+                var done = value.done;
+                console.WriteLine($"    [{(done ? 'x' : ' ')}] {identifier}: {description}");
             }
         }
 
         public void SetDoneIfExists(string identifier, bool done, IConsole console)
         {
-            var identifiedTask = _tasks
-                .FirstOrDefault(task => task.Identifier == long.Parse(identifier));
+            var longIdentifier = long.Parse(identifier);
 
-            if (identifiedTask != null) identifiedTask.Done = done;
+            if (_tasks.ContainsKey(longIdentifier))
+            {
+                _tasks[longIdentifier].done = done;
+            }
         }
     }
 }

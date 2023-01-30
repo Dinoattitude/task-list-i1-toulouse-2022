@@ -4,16 +4,15 @@ namespace Tasks
 {
 	public sealed class TaskList
 	{
-		private const string Quit = "quit";
-
 		private readonly Projects _projects = new ();
 		private readonly IConsole _console;
-
+		
 		private long _lastIdentifier;
 
 		public static void Main()
 		{
-			new TaskList(new RealConsole()).Run(CancellationToken.None);
+			var cancellationToken = CancellationToken.None;
+			new TaskList(new RealConsole()).Run(cancellationToken);
 		}
 
 		public TaskList(IConsole console)
@@ -33,7 +32,7 @@ namespace Tasks
         {
             _console.Write("> ");
             var command = _console.ReadLine();
-            if (command == Quit) return false;
+            if (command == "quit") return false;
 
             Execute(command);
 
@@ -42,8 +41,9 @@ namespace Tasks
 
 		private void Execute(string commandLine)
 		{
-			var commandRest = commandLine.Split(" ".ToCharArray(), 2);
+			var commandRest = commandLine.Split(' ', 2);
 			var command = commandRest[0];
+
 			switch (command) {
 			case "show":
 				Show();
@@ -52,10 +52,10 @@ namespace Tasks
 				Add(commandRest[1]);
 				return;
 			case "check":
-				Check(commandRest[1]);
+				Check(commandRest[1], true);
 				return;
 			case "uncheck":
-				Uncheck(commandRest[1]);
+				Check(commandRest[1], false);
 				return;
 			case "help":
 				Help();
@@ -69,7 +69,7 @@ namespace Tasks
 
 		private void Add(string commandLine)
 		{
-			var subcommandRest = commandLine.Split(" ".ToCharArray(), 2);
+			var subcommandRest = commandLine.Split(' ', 2);
 			var subcommand = subcommandRest[0];
 
 			if (subcommand == "project") {
@@ -78,7 +78,7 @@ namespace Tasks
             }
             
             if (subcommand == "task") {
-				var projectTask = subcommandRest[1].Split(" ".ToCharArray(), 2);
+				var projectTask = subcommandRest[1].Split(' ', 2);
 				AddTask(projectTask[0], projectTask[1]);
             }
 		}
@@ -88,22 +88,19 @@ namespace Tasks
 		private void AddTask(string project, string description)
         {
             _projects.AddTaskToProject(project,
-                new Task { Identifier = NextId(), Description = description, Done = false },
+                NextId(),
+                description,
+                false,
 				_console
             );
         }
 
-		private void Check(string idString)
+		private void Check(string idString, bool check)
 		{
-			SetDone(idString, true);
+			SetDone(idString, check);
 		}
 
-		private void Uncheck(string idString)
-		{
-			SetDone(idString, false);
-		}
-
-        private void SetDone(string idString, bool done) => _projects.SetTaskDone(idString, done, _console);
+		private void SetDone(string idString, bool done) => _projects.SetTaskDone(idString, done, _console);
 
 		private void Help()
 		{

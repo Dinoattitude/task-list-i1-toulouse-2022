@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Tasks
 {
@@ -16,13 +15,15 @@ namespace Tasks
         {
             foreach (var project in _projects)
             {
-                console.WriteLine(project.Key);
-                project.Value.PrintInto(console);
+                var key = project.Key;
+                var value = project.Value;
+                console.WriteLine(key);
+                value.PrintInto(console);
                 console.WriteLine();
             }
         }
 
-        public void AddTaskToProject(string projectName, Task task, IConsole console)
+        public void AddTaskToProject(string projectName, long identifier, string description, bool done, IConsole console)
         {
             if (!_projects.TryGetValue(projectName, out Project project))
             {
@@ -30,7 +31,7 @@ namespace Tasks
                 return;
             }
 
-            project.Add(task);
+            project.Add(identifier, description, done);
         }
 
         public void SetTaskDone(string taskIdentifier, bool done, IConsole console)
